@@ -12,12 +12,10 @@ using ParseSchedule;
 
 namespace ParseSchedule
 {
-
     class Program
     {
-
-        public static ExcelPackage package { get; set; }
-        public static ExcelWorksheet worksheet { get; set; }
+        public static ExcelPackage Package { get; set; }
+        public static ExcelWorksheet Worksheet { get; set; }
         static void Main(string[] args)
         {
             Console.WriteLine("Set connetion");
@@ -26,11 +24,11 @@ namespace ParseSchedule
             var spec = new List<SpecialityCell>();
             var grop = new List<GroupCell>();
             var days = new List<DayCell>();
-            using (package = new ExcelPackage(existingFile))
+            using (Package = new ExcelPackage(existingFile))
             {
                 // get the first worksheet in the workbook
-                worksheet = package.Workbook.Worksheets.FirstOrDefault();
-                var parser = new Parser(worksheet);
+                Worksheet = Package.Workbook.Worksheets.FirstOrDefault();
+                var parser = new Parser(Worksheet);
 
                 spec = Entity.GetSpecialties();
                 grop = Entity.GetGroups();

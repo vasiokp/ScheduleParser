@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ParseSchedule.Models
+﻿namespace ParseSchedule.Models
 {
-    public abstract class CellBase
+    public abstract class BaseCell
     {
         public string StartCellIndex { get; set; }
         public string EndCellIndex { get; set; }

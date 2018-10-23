@@ -2,7 +2,7 @@
 
 namespace ParseSchedule.Models
 {
-   public class DayCell : CellBase
+   public class DayCell : BaseCell
     {
         public Day Day { get; set; }
     }

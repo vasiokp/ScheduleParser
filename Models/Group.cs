@@ -1,9 +1,8 @@
-﻿using System;
-using ParseSchedule.TableModels;
+﻿using ParseSchedule.TableModels;
 
 namespace ParseSchedule.Models
 {
-    public class GroupCell : CellBase
+    public class GroupCell : BaseCell
     {
         public Group Group { get; set; }
         public Speciality Speciality { get; set; }

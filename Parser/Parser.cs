@@ -11,26 +11,28 @@ namespace ParseSchedule
    public class Parser
     {
 
-        static ExcelWorksheet worksheet { get; set; }
+        static ExcelWorksheet Worksheet { get; set; }
 
         public Parser(ExcelWorksheet w)
         {
-            worksheet = w;
+            Worksheet = w;
         }
 
-        public static List<T> GetDataFromRow<T>(int rowIndex, int columnIndex) where T : CellBase, new()
+        public static List<T> GetDataFromRow<T>(int rowIndex, int columnIndex) where T : BaseCell, new()
         {
             var data = new List<T>();
-            for (int i = rowIndex; i < worksheet.Dimension.Columns; i++)
+            for (int i = columnIndex; i < Worksheet.Dimension.Columns; i++)
             {
-                var cellRange = worksheet.Cells[rowIndex, i].GetMergedRangeAddress();
+                var cellRange = Worksheet.Cells[rowIndex, i].GetMergedRangeAddress();
                 if (cellRange != null)
                 {
                     var cellValue = GetCellValue(rowIndex, i);
                     if (cellValue != null)
                     {
-                        var item = new T();
-                        item.TextValue = cellValue;
+                        var item = new T
+                        {
+                            TextValue = cellValue
+                        };
                         GetCellIndexes(ref item, cellRange);
                         data.Add(item);
                     }
@@ -40,19 +42,21 @@ namespace ParseSchedule
             return data;
         }
 
-        public static List<T> GetDataFromColumn<T>(int rowIndex, int columnIndex) where T : CellBase, new ()
+        public static List<T> GetDataFromColumn<T>(int rowIndex, int columnIndex) where T : BaseCell, new ()
         {
             var data = new List<T>();
-            for (int i = rowIndex; i < worksheet.Dimension.Rows; i++)
+            for (int i = rowIndex; i < Worksheet.Dimension.Rows; i++)
             {
-                var cellRange = worksheet.Cells[i, columnIndex].GetMergedRangeAddress();
+                var cellRange = Worksheet.Cells[i, columnIndex].GetMergedRangeAddress();
                 if (cellRange != null)
                 {
                     var cellValue = GetCellValue(i, columnIndex);
                     if (cellValue != null)
                     {
-                        var item = new T();
-                        item.TextValue = cellValue;
+                        var item = new T
+                        {
+                            TextValue = cellValue
+                        };
                         GetCellIndexes(ref item, cellRange);
                         data.Add(item);
                     }
@@ -64,13 +68,13 @@ namespace ParseSchedule
 
         public static string GetCellValue(int rowIndex, int columnIndex)
         {
-            var cellValue = worksheet.Cells[rowIndex, columnIndex].Value;
+            var cellValue = Worksheet.Cells[rowIndex, columnIndex].Value;
             if (cellValue != null && !string.IsNullOrWhiteSpace(cellValue.ToString()))
                 return cellValue.ToString();
             return null;
         }
 
-        public static void GetCellIndexes<T>(ref T cell, string cellRange) where T: CellBase
+        public static void GetCellIndexes<T>(ref T cell, string cellRange) where T: BaseCell
         {
             var range = cellRange.Split(':');
             if (range.Length > 1)
