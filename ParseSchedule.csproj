@@ -69,6 +69,7 @@
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\Helpers.cs" />
     <Compile Include="Models\CellBase.cs" />
+    <Compile Include="Models\DayCell.cs" />
     <Compile Include="Models\Group.cs" />
     <Compile Include="Models\IModelData.cs" />
     <Compile Include="Models\Speciality.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="Parser\Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TableModels\Day.cs" />
     <Compile Include="TableModels\Group.cs" />
     <Compile Include="TableModels\Speciality.cs" />
   </ItemGroup>

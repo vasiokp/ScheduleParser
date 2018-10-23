@@ -25,6 +25,7 @@ namespace ParseSchedule
             Console.OutputEncoding = Encoding.UTF8;
             var spec = new List<SpecialityCell>();
             var grop = new List<GroupCell>();
+            var days = new List<DayCell>();
             using (package = new ExcelPackage(existingFile))
             {
                 // get the first worksheet in the workbook
@@ -33,6 +34,7 @@ namespace ParseSchedule
 
                 spec = Entity.GetSpecialties();
                 grop = Entity.GetGroups();
+                days = Entity.GetDays();
             }
             Entity.ConnectGroupToSpecialities(ref spec, ref grop);
 

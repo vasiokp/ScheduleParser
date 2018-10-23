@@ -10,7 +10,7 @@ namespace ParseSchedule
 
         public static List<GroupCell> GetGroups()
         {
-            return Parser.GetDataFromRow<GroupCell>(Constants.GroupRowIndex)
+            return Parser.GetDataFromRow<GroupCell>(Constants.GroupRowIndex, Constants.ContentStartIndex)
                    .Select(s => new GroupCell
                    {
                        StartCellIndex = s.StartCellIndex,
@@ -25,12 +25,27 @@ namespace ParseSchedule
 
         public static List<SpecialityCell> GetSpecialties()
         {
-            return Parser.GetDataFromRow<SpecialityCell>(Constants.SpecialityRowIndex)
+            return Parser.GetDataFromRow<SpecialityCell>(Constants.SpecialityRowIndex, Constants.ContentStartIndex)
                    .Select(s => new SpecialityCell
                    {
                        StartCellIndex = s.StartCellIndex,
                        EndCellIndex = s.EndCellIndex,
                        Speciality = new TableModels.Speciality
+                       {
+                           Id = Guid.NewGuid(),
+                           Name = s.TextValue
+                       }
+                   }).ToList();
+        }
+
+        public static List<DayCell> GetDays()
+        {
+            return Parser.GetDataFromColumn<DayCell>(Constants.DayRowIndex, Constants.DayColumnIndex)
+                   .Select(s => new DayCell
+                   {
+                       StartCellIndex = s.StartCellIndex,
+                       EndCellIndex = s.EndCellIndex,
+                       Day = new TableModels.Day
                        {
                            Id = Guid.NewGuid(),
                            Name = s.TextValue
@@ -54,7 +69,6 @@ namespace ParseSchedule
                 }
             }
         }
-
 
     }
 }
