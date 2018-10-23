@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ParseSchedule
 {
-    public static class Helpers
+    public static class Extensions
     {
         public static string GetMergedRangeAddress(this ExcelRange @this)
         {

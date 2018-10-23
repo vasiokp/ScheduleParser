@@ -66,11 +66,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
-    <Compile Include="Helpers.cs" />
+    <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\Helpers.cs" />
     <Compile Include="Models\CellBase.cs" />
     <Compile Include="Models\Group.cs" />
     <Compile Include="Models\IModelData.cs" />
     <Compile Include="Models\Speciality.cs" />
+    <Compile Include="Parser\Entities.cs" />
+    <Compile Include="Parser\Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TableModels\Group.cs" />
