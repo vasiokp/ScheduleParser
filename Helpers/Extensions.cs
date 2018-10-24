@@ -23,5 +23,10 @@ namespace ParseSchedule
         }
 
         public static string GetLetters(this string @this) => new string(@this.Where(char.IsLetter).ToArray());
+        public static int GetNumber(this string @this)
+        {
+            var stringNumber = string.Join("", @this.Where(char.IsDigit).ToArray());
+            return int.Parse(stringNumber);
+        }
     }
 }

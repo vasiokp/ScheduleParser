@@ -66,6 +66,33 @@ namespace ParseSchedule
             return data;
         }
 
+        public static List<T> GetDataFromTable<T>(int rowIndex, int columnIndex, int maxRowIndex) where T: BaseCell, new()
+        {
+            var data = new List<T>();
+            for (int i = rowIndex; i < maxRowIndex + 1; i++)
+            {
+                for (int j = columnIndex; j < Worksheet.Dimension.Columns; j++)
+                {
+                    var cellRange = Worksheet.Cells[i, j].GetMergedRangeAddress();
+                    if (cellRange != null)
+                    {
+                        var cellValue = GetCellValue(i, j);
+                        if (cellValue != null)
+                        {
+                            var item = new T
+                            {
+                                TextValue = cellValue
+                            };
+                            GetCellIndexes(ref item, cellRange);
+                            data.Add(item);
+                        }
+                    }
+                }
+            }
+
+            return data;
+        }
+
         public static string GetCellValue(int rowIndex, int columnIndex)
         {
             var cellValue = Worksheet.Cells[rowIndex, columnIndex].Value;

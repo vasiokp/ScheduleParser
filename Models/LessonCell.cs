@@ -9,8 +9,9 @@ namespace ParseSchedule.Models
         public Lesson Lesson { get; set; }
         public List<Group> Groups { get; set; }
         public List<Speciality> Specialities { get; set; }
-        public string Teacher { get; set; }
-        public string LessonNumber { get; set; }
-        public string Auditory { get; set; }
+        public Teacher Teacher { get; set; }
+        public LessonNumber LessonNumber { get; set; }
+        public Auditory Auditory { get; set; }
+        public Week Week { get; set; }
     }
 }
