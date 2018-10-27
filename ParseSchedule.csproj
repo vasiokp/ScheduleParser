@@ -71,6 +71,7 @@
     <Compile Include="Models\BaseCell.cs" />
     <Compile Include="Models\DayCell.cs" />
     <Compile Include="Models\Group.cs" />
+    <Compile Include="Models\ITableModel.cs" />
     <Compile Include="Models\LessonCell.cs" />
     <Compile Include="Models\LessonNumberCell.cs" />
     <Compile Include="Models\Speciality.cs" />

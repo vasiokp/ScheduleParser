@@ -1,4 +1,5 @@
 ﻿using ParseSchedule.Models;
+using ParseSchedule.TableModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -100,9 +101,9 @@ namespace ParseSchedule
                    {
                        StartCellIndex = s.StartCellIndex,
                        EndCellIndex = s.EndCellIndex,
-                       Week = new TableModels.Week
+                       Week = new Week
                        {
-                           WeekNumber = Helpers.GetNumberFromString(s.TextValue)
+                           Name = s.TextValue
                        }
                    }).ToList();
         }
@@ -111,6 +112,7 @@ namespace ParseSchedule
         {
             var list = Parser.GetDataFromTable<LessonCell>((int)ConstantIndexes.ContentRowIndex, (int)ConstantIndexes.ContentColumnIndex, Days.Last().EndCellIndex.GetNumber());
             var resultList = new List<LessonCell>();
+            var lessonsList = new List<LessonCell>();
             foreach (var item in list)
             {
 
@@ -128,21 +130,45 @@ namespace ParseSchedule
                 }
 
             }
-            var sd = resultList.GroupBy(l => new { l.Day, l.LessonNumber, l.Week, l.Groups.First().Name},
-                (key,group) => new
+            var lessonForOneGroup = resultList.Where(l => l.Groups.Count == 1);
+            var lessonsByDay = lessonForOneGroup.GroupBy(l => new { l.Day, l.Groups.First().Name },
+                (key, group) => new
                 {
                     key.Day,
-                    key.LessonNumber,
-                    key.Week,
                     key.Name,
                     Result = group.ToList()
-
                 }
                 ).ToList();
-            var ss = sd.Where(sq => sq.Result.Count != 3).ToList();
+            foreach (var item in lessonsByDay)
+            {
+                var info = new LessonCell();
+                if (item.Result.Count >= 3)
+                {
+                    info.Day = item.Day;
+                    info.Groups = item.Result.First().Groups;
+                    info.LessonNumber = item.Result.First().LessonNumber;
+                    info.Lesson = GetLesson(item.Result);
+                    info.Teacher = GetTeacher(item.Result);
+                    info.Auditory = GetAuditory(item.Result);
+                    info.Week = item.Result.First().Week;
+                    lessonsList.Add(info);
+                }
 
-           
-            return new List<LessonCell>();
+                if (item.Result.Count == 6)
+                {
+                    info.Day = item.Day;
+                    info.Groups = item.Result.First().Groups;
+                    info.LessonNumber = item.Result.First().LessonNumber;
+                    info.Lesson = GetLesson(item.Result.Skip(3));
+                    info.Teacher = GetTeacher(item.Result.Skip(3));
+                    info.Auditory = GetAuditory(item.Result.Skip(3));
+                    info.Week = item.Result.First().Week;
+                    lessonsList.Add(info);
+                }
+
+
+            }
+            return lessonsList;
 
         }
 
@@ -163,5 +189,18 @@ namespace ParseSchedule
             }
         }
 
+        public static Lesson GetLesson(IEnumerable<LessonCell> items) => GetEntity<Lesson>(items, 0);
+        public static Teacher GetTeacher(IEnumerable<LessonCell> items) => GetEntity<Teacher>(items, 1);
+        public static Auditory GetAuditory(IEnumerable<LessonCell> items) => GetEntity<Auditory>(items, 2);
+
+        static T GetEntity<T>(IEnumerable<LessonCell> items, int itemIndex) where T : ITableModel, new()
+        {
+            return new T
+            {
+                Id = Guid.NewGuid(),
+                Name = items.ToList()[itemIndex].TextValue
+            };
+
+        }
     }
 }

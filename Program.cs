@@ -15,7 +15,7 @@ namespace ParseSchedule
         static void Main(string[] args)
         {
             Console.WriteLine("Set connetion");
-            FileInfo existingFile = new FileInfo("c:\\schedule1.xlsx");
+            FileInfo existingFile = new FileInfo("d:\\schedule1.xlsx");
             Console.OutputEncoding = Encoding.UTF8;
             var spec = new List<SpecialityCell>();
             var grop = new List<GroupCell>();
@@ -29,8 +29,6 @@ namespace ParseSchedule
                 Worksheet = Package.Workbook.Worksheets.FirstOrDefault();
                 var parser = new Parser(Worksheet);
                 Schedule.Init();
-
-
 
             }
             Schedule.ConnectGroupToSpecialities(ref spec, ref grop);
