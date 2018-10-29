@@ -29,6 +29,7 @@ namespace ParseSchedule
         {
             Specialities = GetSpecialties();
             Groups = GetGroups();
+            ConnectGroupToSpecialities();
             Days = GetDays();
             Weeks = GetWeeks();
             LessonNumbers = GetLessonNumberCells();
@@ -37,6 +38,7 @@ namespace ParseSchedule
 
         public static List<GroupCell> GetGroups()
         {
+            
             return Parser.GetDataFromRow<GroupCell>(Constants.GroupRowIndex, Constants.ContentStartIndex)
                    .Select(s => new GroupCell
                    {
@@ -115,11 +117,11 @@ namespace ParseSchedule
             var lessonsList = new List<LessonCell>();
             foreach (var item in list)
             {
-
-                item.Groups = Groups.Where(g => g.IsInColumnRange(item.StartCellIndex, item.EndCellIndex)).Select(g => g.Group).ToList();
-                if (item.Groups.Count != 0)
+                var itemGroups = Groups.Where(g => g.IsInColumnRange(item.StartCellIndex, item.EndCellIndex)).ToList();
+                if (itemGroups.Count != 0) // will need to be changed
                 {
-                    item.Specialities = Specialities.Where(s => s.IsInColumnRange(item.StartCellIndex, item.EndCellIndex)).Select(s => s.Speciality).ToList();
+                    item.Groups = itemGroups.Select(g => g.Group).ToList();
+                    item.Specialities = itemGroups.Select(s => s.Speciality).Distinct().ToList();
                     item.Day = Days.Where(d => d.IsInRowRange(item.StartCellIndex, item.EndCellIndex)).Select(d => d.Day).FirstOrDefault();
                     item.LessonNumber = LessonNumbers.Where(l => l.IsInRowRange(item.StartCellIndex, item.EndCellIndex)).Select(s => s.LessonNumber).FirstOrDefault();
                     if (!item.IsMergedRows)
@@ -142,6 +144,22 @@ namespace ParseSchedule
             foreach (var item in lessonsByDay)
             {
                 var info = new LessonCell();
+
+                if(item.Result.Count == 1 || item.Result.Count == 4 || item.Result.Count == 0 )
+                {
+
+                }
+                if(item.Result.Count == 2)
+                {
+                    info.Day = item.Day;
+                    info.Groups = item.Result.First().Groups;
+                    info.LessonNumber = item.Result.First().LessonNumber;
+                    info.Lesson = GetLesson(item.Result);
+                    info.Auditory = GetAuditory(item.Result, 1);
+                    info.Week = item.Result.First().Week;
+                    lessonsList.Add(info);
+
+                }
                 if (item.Result.Count >= 3)
                 {
                     info.Day = item.Day;
@@ -156,34 +174,28 @@ namespace ParseSchedule
 
                 if (item.Result.Count == 6)
                 {
-                    info.Day = item.Day;
-                    info.Groups = item.Result.First().Groups;
-                    info.LessonNumber = item.Result.First().LessonNumber;
                     info.Lesson = GetLesson(item.Result.Skip(3));
                     info.Teacher = GetTeacher(item.Result.Skip(3));
                     info.Auditory = GetAuditory(item.Result.Skip(3));
-                    info.Week = item.Result.First().Week;
                     lessonsList.Add(info);
                 }
-
-
             }
             return lessonsList;
-
         }
 
-        public static void ConnectGroupToSpecialities(ref List<SpecialityCell> specialities, ref List<GroupCell> groups)
+        public static void ConnectGroupToSpecialities()
         {
-            foreach (var speciality in specialities)
+            foreach (var speciality in Specialities)
             {
-                speciality.Groups = new List<TableModels.Group>();
-                foreach (var group in groups)
+                speciality.Groups = new List<Group>();
+                foreach (var group in Groups)
                 {
                     var start = Helpers.GetColumnOrder(speciality.StartCellIndex, group.StartCellIndex);
                     var end = Helpers.GetColumnOrder(speciality.EndCellIndex, group.EndCellIndex);
                     if (start < 1 && end > -1)
                     {
                         speciality.Groups.Add(group.Group);
+                        group.Speciality = speciality.Speciality;
                     }
                 }
             }
@@ -191,7 +203,7 @@ namespace ParseSchedule
 
         public static Lesson GetLesson(IEnumerable<LessonCell> items) => GetEntity<Lesson>(items, 0);
         public static Teacher GetTeacher(IEnumerable<LessonCell> items) => GetEntity<Teacher>(items, 1);
-        public static Auditory GetAuditory(IEnumerable<LessonCell> items) => GetEntity<Auditory>(items, 2);
+        public static Auditory GetAuditory(IEnumerable<LessonCell> items, int itemIndex = 2) => GetEntity<Auditory>(items, itemIndex);
 
         static T GetEntity<T>(IEnumerable<LessonCell> items, int itemIndex) where T : ITableModel, new()
         {

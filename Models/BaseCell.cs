@@ -21,8 +21,8 @@
 
         public bool IsInColumnRange(string itemStart, string itemEnd)
         {
-            var isLeftColumnInRange = Helpers.GetColumnOrder(StartCellIndex, itemStart) <= 0;
-            var isRigthColumnInRange = Helpers.GetColumnOrder(itemEnd, EndCellIndex) <= 0;
+            var isLeftColumnInRange = Helpers.GetColumnOrder(itemStart, StartCellIndex) <= 0;
+            var isRigthColumnInRange = Helpers.GetColumnOrder(EndCellIndex, itemEnd) <= 0;
             return isLeftColumnInRange && isRigthColumnInRange;
         }
     }

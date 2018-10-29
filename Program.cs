@@ -31,7 +31,6 @@ namespace ParseSchedule
                 Schedule.Init();
 
             }
-            Schedule.ConnectGroupToSpecialities(ref spec, ref grop);
 
             Console.WriteLine("Specialities count: {0}/39", spec.Count);
             Console.WriteLine("Groups count: {0}/50", grop.Count);
