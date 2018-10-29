@@ -21,10 +21,9 @@
 
         public bool IsInColumnRange(string itemStart, string itemEnd)
         {
-            var start = StartCellIndex.GetLetters().CompareTo(itemStart.GetLetters());
-            var end = EndCellIndex.GetLetters().CompareTo(itemEnd.GetLetters());
-
-            return start > -1 && end < 1;
+            var isLeftColumnInRange = Helpers.GetColumnOrder(StartCellIndex, itemStart) <= 0;
+            var isRigthColumnInRange = Helpers.GetColumnOrder(itemEnd, EndCellIndex) <= 0;
+            return isLeftColumnInRange && isRigthColumnInRange;
         }
     }
 }
