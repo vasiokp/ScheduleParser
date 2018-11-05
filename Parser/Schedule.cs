@@ -6,6 +6,15 @@ using System.Linq;
 
 namespace ParseSchedule
 {
+    public class GroupedItem
+    {
+        public Day Day { get; set; }
+        public string GroupNumber { get; set; }
+        public LessonNumber NumberOfLesson { get; set; }
+        public int CountOfSpecialities { get; set; }
+        public List<LessonCell> Rows { get; set; }
+    }
+
     public static class Schedule
     {
         public static List<SpecialityCell> Specialities { get; set; }
@@ -132,52 +141,77 @@ namespace ParseSchedule
                 }
 
             }
-            var lessonForOneGroup = resultList.Where(l => l.Groups.Count == 1);
-            var lessonsByDay = lessonForOneGroup.GroupBy(l => new { l.Day, l.Groups.First().Name },
-                (key, group) => new
-                {
-                    key.Day,
-                    key.Name,
-                    Result = group.ToList()
-                }
-                ).ToList();
+            var lessonWithOneGroup = resultList.Where(l => l.Groups.Count == 1);
+            //var lessonForMoreGroup = resultList.Where(l => l.Groups.Count > 1);
+            //var lessonsByDay = lessonForOneGroup.GroupBy(l => new  GroupedItem { st = l.Groups.Select(g1 => g1.Name), Day = l.Day },
+            //    (key, group) => new GroupedItem
+            //    {
+            //        Day = key.Day,
+            //        NumberOfLesson = key.NumberOfLesson,
+            //        Rows = group.ToList()
+            //    }
+            //    ).ToList();
+
+            var lessonsByDay = lessonWithOneGroup.GroupBy(l => new { groupNumber = l.Groups.First().Name, l.Day, l.LessonNumber },
+            (key, group) => new GroupedItem
+            {
+                Day = key.Day,
+                NumberOfLesson = key.LessonNumber,
+                GroupNumber = key.groupNumber,
+                Rows = group.ToList()
+            }
+            ).ToList();
+
             foreach (var item in lessonsByDay)
             {
                 var info = new LessonCell();
 
-                if(item.Result.Count == 1 || item.Result.Count == 4 || item.Result.Count == 0 )
-                {
-
-                }
-                if(item.Result.Count == 2)
+                if (item.Rows.Count == 1) // fizra
                 {
                     info.Day = item.Day;
-                    info.Groups = item.Result.First().Groups;
-                    info.LessonNumber = item.Result.First().LessonNumber;
-                    info.Lesson = GetLesson(item.Result);
-                    info.Auditory = GetAuditory(item.Result, 1);
-                    info.Week = item.Result.First().Week;
-                    lessonsList.Add(info);
-
+                    info.Groups = item.Rows.First().Groups;
+                    info.LessonNumber = item.Rows.First().LessonNumber;
+                    info.Lesson = GetLesson(item.Rows);
+                    info.Specialities = item.Rows.First().Specialities;
+                    info.Week = item.Rows.First().Week;
                 }
-                if (item.Result.Count >= 3)
+
+                if (item.Rows.Count == 2)
                 {
                     info.Day = item.Day;
-                    info.Groups = item.Result.First().Groups;
-                    info.LessonNumber = item.Result.First().LessonNumber;
-                    info.Lesson = GetLesson(item.Result);
-                    info.Teacher = GetTeacher(item.Result);
-                    info.Auditory = GetAuditory(item.Result);
-                    info.Week = item.Result.First().Week;
+                    info.Groups = item.Rows.First().Groups;
+                    info.LessonNumber = item.Rows.First().LessonNumber;
+                    info.Lesson = GetLesson(item.Rows);
+                    info.Auditory = GetAuditory(item.Rows, 1);
+                    info.Week = item.Rows.First().Week;
+                    info.Specialities = item.Rows.First().Specialities;
+
+                    lessonsList.Add(info);
+
+                }
+                if (item.Rows.Count == 3)
+                {
+                    info = MapLesson(item);
                     lessonsList.Add(info);
                 }
-
-                if (item.Result.Count == 6)
+                if (item.Rows.Count == 4) // groups with the same name
                 {
-                    info.Lesson = GetLesson(item.Result.Skip(3));
-                    info.Teacher = GetTeacher(item.Result.Skip(3));
-                    info.Auditory = GetAuditory(item.Result.Skip(3));
+
+                }
+                if (item.Rows.Count == 5) // like 2 and 3 or visa versa !?!?
+                {
+
+                }
+                if (item.Rows.Count == 6)
+                {
+                    info = MapLesson(item);
                     lessonsList.Add(info);
+                    info = MapLesson(item, 3);
+                    lessonsList.Add(info);
+                }
+                if(item.Rows.Count > 6)
+                {
+
                 }
             }
             return lessonsList;
@@ -213,6 +247,20 @@ namespace ParseSchedule
                 Name = items.ToList()[itemIndex].TextValue
             };
 
+        }
+        static LessonCell MapLesson(GroupedItem item, int skipNumber = 0)
+        {
+            return new LessonCell
+            {
+                Day = item.Day,
+                Groups = item.Rows.First().Groups,
+                Specialities = item.Rows.First().Specialities,
+                LessonNumber = item.NumberOfLesson,
+                Lesson = GetLesson(item.Rows.Skip(skipNumber)),
+                Teacher = GetTeacher(item.Rows.Skip(skipNumber)),
+                Auditory = GetAuditory(item.Rows.Skip(skipNumber)),
+                Week = item.Rows.First().Week
+            };
         }
     }
 }
