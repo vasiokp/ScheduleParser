@@ -15,6 +15,12 @@ namespace ParseSchedule
         public List<LessonCell> Rows { get; set; }
     }
 
+    public class ScheduleView
+    {
+        public string GroupName { get; set; }
+        public List<LessonCell> Lessons { get; set; }
+    }
+
     public static class Schedule
     {
         public static List<SpecialityCell> Specialities { get; set; }
@@ -22,7 +28,7 @@ namespace ParseSchedule
         public static List<WeekCell> Weeks { get; set; }
         public static List<GroupCell> Groups { get; set; }
         public static List<LessonNumberCell> LessonNumbers { get; set; }
-        public static List<LessonCell> Lessons { get; set; }
+        public static List<ScheduleView> Lessons { get; set; }
 
         static Schedule()
         {
@@ -31,7 +37,7 @@ namespace ParseSchedule
             Days = new List<DayCell>();
             Weeks = new List<WeekCell>();
             LessonNumbers = new List<LessonNumberCell>();
-            Lessons = new List<LessonCell>();
+            Lessons = new List<ScheduleView>();
         }
 
         public static void Init()
@@ -47,7 +53,7 @@ namespace ParseSchedule
 
         public static List<GroupCell> GetGroups()
         {
-            
+
             return Parser.GetDataFromRow<GroupCell>(Constants.GroupRowIndex, Constants.ContentStartIndex)
                    .Select(s => new GroupCell
                    {
@@ -119,11 +125,10 @@ namespace ParseSchedule
                    }).ToList();
         }
 
-        public static List<LessonCell> GetLessons()
+        public static List<ScheduleView> GetLessons()
         {
             var list = Parser.GetDataFromTable<LessonCell>((int)ConstantIndexes.ContentRowIndex, (int)ConstantIndexes.ContentColumnIndex, Days.Last().EndCellIndex.GetNumber());
             var resultList = new List<LessonCell>();
-            var lessonsList = new List<LessonCell>();
             foreach (var item in list)
             {
                 var itemGroups = Groups.Where(g => g.IsInColumnRange(item.StartCellIndex, item.EndCellIndex)).ToList();
@@ -141,80 +146,100 @@ namespace ParseSchedule
                 }
 
             }
-            var lessonWithOneGroup = resultList.Where(l => l.Groups.Count == 1);
-            //var lessonForMoreGroup = resultList.Where(l => l.Groups.Count > 1);
-            //var lessonsByDay = lessonForOneGroup.GroupBy(l => new  GroupedItem { st = l.Groups.Select(g1 => g1.Name), Day = l.Day },
-            //    (key, group) => new GroupedItem
-            //    {
-            //        Day = key.Day,
-            //        NumberOfLesson = key.NumberOfLesson,
-            //        Rows = group.ToList()
-            //    }
-            //    ).ToList();
-
-            var lessonsByDay = lessonWithOneGroup.GroupBy(l => new { groupNumber = l.Groups.First().Name, l.Day, l.LessonNumber },
-            (key, group) => new GroupedItem
+            var _list = new List<ScheduleView>();
+            foreach (var item in Groups)
             {
-                Day = key.Day,
-                NumberOfLesson = key.LessonNumber,
-                GroupNumber = key.groupNumber,
-                Rows = group.ToList()
-            }
-            ).ToList();
+                var rows = resultList.Where(r => r.Groups.Contains(item.Group)); // 57 rows for 422 group
 
-            foreach (var item in lessonsByDay)
+                var groupedItems = rows.GroupBy(d => new { d.LessonNumber, item.Group.Name, d.Day },
+                    (key, group) => new GroupedItem
+                    {
+                        Day = key.Day,
+                        NumberOfLesson = key.LessonNumber,
+                        GroupNumber = key.Name,
+                        Rows = group.ToList()
+                    }).ToList();
+
+                var groupLessons = ParseRows(groupedItems).ToList();
+                var scheduleItem = new ScheduleView
+                {
+                    GroupName = item.Group.Name,
+                    Lessons = groupLessons
+                };
+                _list.Add(scheduleItem);
+            }
+
+            //var group422 = _list.Where(u => u.GroupName == "422").FirstOrDefault(); 
+            //foreach (var item in group422.Lessons)
+            //{
+            //    Console.WriteLine($"{item.LessonNumber.NumberOfLesson} : {item.Lesson.Name} : {item.Teacher.Name} : {item.Auditory.Name}");
+            //}
+            //Console.WriteLine($"Count {group422.Lessons.Count}");
+            return _list;
+        }
+
+        static List<LessonCell> ParseRows(List<GroupedItem> groupedItems)
+        {
+            var result = new List<LessonCell>();
+            foreach (var item in groupedItems)
             {
                 var info = new LessonCell();
 
-                if (item.Rows.Count == 1) // fizra
+                switch (item.Rows.Count)
                 {
-                    info.Day = item.Day;
-                    info.Groups = item.Rows.First().Groups;
-                    info.LessonNumber = item.Rows.First().LessonNumber;
-                    info.Lesson = GetLesson(item.Rows);
-                    info.Specialities = item.Rows.First().Specialities;
-                    info.Week = item.Rows.First().Week;
-                }
+                    case 1: // Fizra
+                        {
+                            info.Day = item.Day;
+                            info.Groups = item.Rows.First().Groups;
+                            info.LessonNumber = item.Rows.First().LessonNumber;
+                            info.Lesson = GetLesson(item.Rows);
+                            info.Specialities = item.Rows.First().Specialities;
+                            info.Week = item.Rows.First().Week;
+                            result.Add(info);
+                            break;
+                        }
+                    case 2:
+                        {
+                            info.Day = item.Day;
+                            info.Groups = item.Rows.First().Groups;
+                            info.LessonNumber = item.Rows.First().LessonNumber;
+                            info.Lesson = GetLesson(item.Rows);
+                            info.Auditory = GetAuditory(item.Rows, 1);
+                            info.Week = item.Rows.First().Week;
+                            info.Specialities = item.Rows.First().Specialities;
+                            result.Add(info);
+                            break;
+                        }
+                    case 3:
+                        {
+                            info = MapLesson(item);
+                            result.Add(info);
+                            break;
+                        }
+                    case 4: // groups with the same name
+                        {
 
-                if (item.Rows.Count == 2)
-                {
-                    info.Day = item.Day;
-                    info.Groups = item.Rows.First().Groups;
-                    info.LessonNumber = item.Rows.First().LessonNumber;
-                    info.Lesson = GetLesson(item.Rows);
-                    info.Auditory = GetAuditory(item.Rows, 1);
-                    info.Week = item.Rows.First().Week;
-                    info.Specialities = item.Rows.First().Specialities;
-
-                    lessonsList.Add(info);
-
-                }
-                if (item.Rows.Count == 3)
-                {
-                    info = MapLesson(item);
-                    lessonsList.Add(info);
-                }
-                if (item.Rows.Count == 4) // groups with the same name
-                {
-
-                }
-                if (item.Rows.Count == 5) // like 2 and 3 or visa versa !?!?
-                {
-
-                }
-                if (item.Rows.Count == 6)
-                {
-                    info = MapLesson(item);
-                    lessonsList.Add(info);
-                    info = MapLesson(item, 3);
-                    lessonsList.Add(info);
-                }
-                if(item.Rows.Count > 6)
-                {
-
+                            break;
+                        }
+                    case 5: // 3 and 2 or visa versa
+                        {
+                            break;
+                        }
+                    case 6:
+                        {
+                            info = MapLesson(item);
+                            result.Add(info);
+                            info = MapLesson(item, 3);
+                            result.Add(info);
+                            break;
+                        }
+                    default:
+                        {
+                            break;
+                        }
                 }
             }
-            return lessonsList;
+            return result;
         }
 
         public static void ConnectGroupToSpecialities()

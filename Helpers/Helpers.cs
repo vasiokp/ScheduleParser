@@ -6,7 +6,15 @@ namespace ParseSchedule
     {
         public static int GetColumnOrder(string firstColumn, string secondColumn)
         {
-            return string.Compare(firstColumn.GetLetters(), secondColumn.GetLetters(), true);
+            var first = firstColumn.GetLetters();
+            var second = secondColumn.GetLetters();
+            if (second.Count() == first.Count())
+                return string.Compare(firstColumn.GetLetters(), secondColumn.GetLetters(), true);
+            else if (second.Count() > first.Count())
+            {
+                return -1;
+            }
+            else return 1;
         }
 
         public static int GetNumberFromString(string week)
