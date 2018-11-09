@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ParseSchedule.Models
 {
-    public class SpecialityCell : CellBase
+    public class SpecialityCell : BaseCell
     {
         public Speciality Speciality { get; set; }
         public List<Group> Groups { get; set; }
